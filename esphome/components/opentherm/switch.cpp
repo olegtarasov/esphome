@@ -22,27 +22,6 @@ void OpenthermSwitch::setup() {
     this->write_state(state);
 }
 
-void OpenthermSwitch::set_mode(esphome::opentherm::OpenthermSwitchMode mode) {
-    ESP_LOGW("opentherm.switch", "'mode' property is deprecated. Please use 'restore_mode'.");
-    esphome::switch_::SwitchRestoreMode target_mode = switch_::SWITCH_ALWAYS_OFF;
-    switch (mode) {
-      case OpenthermSwitchMode::OPENTHERM_SWITCH_RESTORE_DEFAULT_OFF:
-        target_mode = switch_::SWITCH_RESTORE_DEFAULT_OFF;
-        break;
-      case OpenthermSwitchMode::OPENTHERM_SWITCH_RESTORE_DEFAULT_ON:
-        target_mode = switch_::SWITCH_RESTORE_DEFAULT_ON;
-        break;
-      case OpenthermSwitchMode::OPENTHERM_SWITCH_START_OFF:
-        target_mode = switch_::SWITCH_ALWAYS_OFF;
-        break;
-      case OpenthermSwitchMode::OPENTHERM_SWITCH_START_ON:
-        target_mode = switch_::SWITCH_ALWAYS_ON;
-        break;
-    }
-
-    this->set_restore_mode(target_mode);
-}
-
 void OpenthermSwitch::dump_config() {
     esphome::switch_::log_switch("opentherm.switch", "", "OpenTherm Switch", this);
     ESP_LOGCONFIG("opentherm.switch", "  Current state: %d", this->state);

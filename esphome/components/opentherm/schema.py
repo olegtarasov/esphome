@@ -430,43 +430,38 @@ BINARY_SENSORS: Schema = Schema({
 })
 
 class SwitchSchema(EntitySchema):
-    default_mode: str
+    pass
 
 SWITCHES: Schema[SwitchSchema] = Schema({
     "ch_enable": SwitchSchema({
         "description": "Central Heating enabled",
         "message": "Status",
         "keep_updated": True,
-        "message_data": "flag8_hb_0",
-        "default_mode": "restore_default_on"
+        "message_data": "flag8_hb_0"
     }),
     "dhw_enable": SwitchSchema({
         "description": "Domestic Hot Water enabled",
         "message": "Status",
         "keep_updated": True,
-        "message_data": "flag8_hb_1",
-        "default_mode": "restore_default_on"
+        "message_data": "flag8_hb_1"
     }),
     "cooling_enable": SwitchSchema({
         "description": "Cooling enabled",
         "message": "Status",
         "keep_updated": True,
-        "message_data": "flag8_hb_2",
-        "default_mode": "restore_default_off"
+        "message_data": "flag8_hb_2"
     }),
     "otc_active": SwitchSchema({
         "description": "Outside temperature compensation active",
         "message": "Status",
         "keep_updated": True,
-        "message_data": "flag8_hb_3",
-        "default_mode": "restore_default_off"
+        "message_data": "flag8_hb_3"
     }),
     "ch2_active": SwitchSchema({
         "description": "Central Heating 2 active",
         "message": "Status",
         "keep_updated": True,
-        "message_data": "flag8_hb_4",
-        "default_mode": "restore_default_off"
+        "message_data": "flag8_hb_4"
     }),
 })
 
