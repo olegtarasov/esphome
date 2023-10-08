@@ -8,23 +8,27 @@ void OpenthermSwitch::write_state(bool state) {
 }
 
 void OpenthermSwitch::setup() {
-    bool initial_state = false;
-    switch (this->mode) {
-        case OPENTHERM_SWITCH_RESTORE_DEFAULT_ON:
-            initial_state = this->get_initial_state().value_or(true);
-            break;
-        case OPENTHERM_SWITCH_RESTORE_DEFAULT_OFF:
-            initial_state = this->get_initial_state().value_or(false);
-            break;
-        case OPENTHERM_SWITCH_START_ON:
-            initial_state = true;
-            break;
-        case OPENTHERM_SWITCH_START_OFF:
-            initial_state = false;
-            break;
+    this->write_state(this->get_initial_state_with_restore_mode());
+}
+
+void OpenthermSwitch::set_mode(esphome::opentherm::OpenthermSwitchMode mode) {
+    esphome::switch_::SwitchRestoreMode target_mode = switch_::SWITCH_ALWAYS_OFF;
+    switch (mode) {
+      case OpenthermSwitchMode::OPENTHERM_SWITCH_RESTORE_DEFAULT_OFF:
+        target_mode = switch_::SWITCH_RESTORE_DEFAULT_OFF;
+        break;
+      case OpenthermSwitchMode::OPENTHERM_SWITCH_RESTORE_DEFAULT_ON:
+        target_mode = switch_::SWITCH_RESTORE_DEFAULT_ON;
+        break;
+      case OpenthermSwitchMode::OPENTHERM_SWITCH_START_OFF:
+        target_mode = switch_::SWITCH_ALWAYS_OFF;
+        break;
+      case OpenthermSwitchMode::OPENTHERM_SWITCH_START_ON:
+        target_mode = switch_::SWITCH_ALWAYS_ON;
+        break;
     }
 
-    this->write_state(initial_state);
+    this->set_restore_mode(target_mode);
 }
 
 } // namespace opentherm
