@@ -23,6 +23,7 @@ public:
     void set_mode(OpenthermSwitchMode mode);
 
     void setup() override;
+    void dump_config() override;
 };
 
 } // namespace opentherm

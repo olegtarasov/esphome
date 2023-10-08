@@ -43,5 +43,10 @@ void OpenthermSwitch::set_mode(esphome::opentherm::OpenthermSwitchMode mode) {
     this->set_restore_mode(target_mode);
 }
 
+void OpenthermSwitch::dump_config() {
+    esphome::switch_::log_switch("opentherm.switch", "", "OpenTherm Switch", this);
+    ESP_LOGCONFIG("opentherm.switch", "  Current state: %d", this->state);
+}
+
 } // namespace opentherm
 } // namespace esphome
