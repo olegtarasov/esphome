@@ -3,8 +3,6 @@
 namespace esphome {
 namespace opentherm {
 
-static const char *TAG = "opentherm";
-
 void OpenthermSwitch::write_state(bool state) {
     this->publish_state(state);
 }
@@ -14,17 +12,18 @@ void OpenthermSwitch::setup() {
     bool state = false;
     if (!restored.has_value())
     {
-      ESP_LOGD(TAG, "Couldn't restore state for OpenTherm switch '%s'", this->get_name().c_str());
+      ESP_LOGD("opentherm.switch", "Couldn't restore state for OpenTherm switch '%s'", this->get_name().c_str());
     }
     else
     {
-      ESP_LOGD(TAG, "Restored state for OpenTherm switch '%s': %d", this->get_name().c_str(), restored.value());
+      ESP_LOGD("opentherm.switch", "Restored state for OpenTherm switch '%s': %d", this->get_name().c_str(), restored.value());
       state = restored.value();
     }
     this->write_state(state);
 }
 
 void OpenthermSwitch::set_mode(esphome::opentherm::OpenthermSwitchMode mode) {
+    ESP_LOGW("opentherm.switch", "'mode' property is deprecated. Please use 'restore_mode'.");
     esphome::switch_::SwitchRestoreMode target_mode = switch_::SWITCH_ALWAYS_OFF;
     switch (mode) {
       case OpenthermSwitchMode::OPENTHERM_SWITCH_RESTORE_DEFAULT_OFF:
