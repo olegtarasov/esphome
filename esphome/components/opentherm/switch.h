@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/switch/switch.h"
+#include "esphome/core/log.h"
 
 namespace esphome {
 namespace opentherm {

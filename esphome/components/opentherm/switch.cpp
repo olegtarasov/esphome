@@ -3,12 +3,25 @@
 namespace esphome {
 namespace opentherm {
 
+static const char *TAG = "opentherm";
+
 void OpenthermSwitch::write_state(bool state) {
     this->publish_state(state);
 }
 
 void OpenthermSwitch::setup() {
-    this->write_state(this->get_initial_state_with_restore_mode());
+    auto restored = this->get_initial_state_with_restore_mode();
+    bool state = false;
+    if (!restored.has_value())
+    {
+      ESP_LOGD(TAG, "Couldn't restore state for OpenTherm switch '%s'", this->get_name().c_str());
+    }
+    else
+    {
+      ESP_LOGD(TAG, "Restored state for OpenTherm switch '%s': %d", this->get_name().c_str(), restored.value());
+      state = restored.value();
+    }
+    this->write_state(state);
 }
 
 void OpenthermSwitch::set_mode(esphome::opentherm::OpenthermSwitchMode mode) {
