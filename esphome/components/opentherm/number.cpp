@@ -27,5 +27,13 @@ void OpenthermNumber::setup() {
   this->publish_state(value);
 }
 
+void OpenthermNumber::dump_config() {
+  const char* TAG = "opentherm.number";
+  LOG_NUMBER("", "OpenTherm Number", this);
+  ESP_LOGCONFIG(TAG, "  Restore value: %d", this->restore_value_);
+  ESP_LOGCONFIG(TAG, "  Initial value: %.2f", this->initial_value_);
+  ESP_LOGCONFIG(TAG, "  Current value: %.2f", this->state);
+}
+
 }
 }

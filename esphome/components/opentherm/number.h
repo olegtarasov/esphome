@@ -2,6 +2,7 @@
 
 #include "esphome/components/number/number.h"
 #include "esphome/core/preferences.h"
+#include "esphome/core/log.h"
 #include "input.h"
 
 namespace esphome {
@@ -12,6 +13,7 @@ class OpenthermNumber : public number::Number, public Component, public Openther
 protected:
     void control(float value) override;
     void setup() override;
+    void dump_config() override;
 
     float initial_value_{NAN};
     bool restore_value_{false};
