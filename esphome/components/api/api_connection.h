@@ -72,6 +72,11 @@ class APIConnection : public APIServerConnection {
   bool send_number_info(number::Number *number);
   void number_command(const NumberCommandRequest &msg) override;
 #endif
+#ifdef USE_TEXT
+  bool send_text_state(text::Text *text, std::string state);
+  bool send_text_info(text::Text *text);
+  void text_command(const TextCommandRequest &msg) override;
+#endif
 #ifdef USE_SELECT
   bool send_select_state(select::Select *select, std::string state);
   bool send_select_info(select::Select *select);
@@ -135,6 +140,7 @@ class APIConnection : public APIServerConnection {
   void on_disconnect_response(const DisconnectResponse &value) override;
   void on_ping_response(const PingResponse &value) override {
     // we initiated ping
+    this->ping_retries_ = 0;
     this->sent_ping_ = false;
   }
   void on_home_assistant_state_response(const HomeAssistantStateResponse &msg) override;
@@ -212,6 +218,8 @@ class APIConnection : public APIServerConnection {
   bool state_subscription_{false};
   int log_subscription_{ESPHOME_LOG_LEVEL_NONE};
   uint32_t last_traffic_;
+  uint32_t next_ping_retry_{0};
+  uint8_t ping_retries_{0};
   bool sent_ping_{false};
   bool service_call_subscription_{false};
   bool next_close_ = false;
