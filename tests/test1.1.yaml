@@ -240,7 +240,7 @@ button:
 opentherm:
   in_pin: 20
   out_pin: 19
-  
+
 number:
   # Boiler config
   - platform: opentherm
