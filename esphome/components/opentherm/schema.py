@@ -501,6 +501,13 @@ BINARY_SENSORS: dict[str, BinarySensorSchema] = {
         keep_updated=True,
         message_data="flag8_lb_6",
     ),
+    "electricity_production": BinarySensorSchema(
+        description="Status: Electricity production",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="STATUS",
+        keep_updated=True,
+        message_data="flag8_lb_7",
+    ),
     "dhw_present": BinarySensorSchema(
         description="Configuration: DHW present",
         message="DEVICE_CONFIG",
@@ -537,6 +544,19 @@ BINARY_SENSORS: dict[str, BinarySensorSchema] = {
         keep_updated=False,
         message_data="flag8_hb_5",
     ),
+
+    "water_filling": BinarySensorSchema(
+        description="Configuration: Remote water filling",
+        message="DEVICE_CONFIG",
+        keep_updated=False, # keep updated true ?
+        message_data="flag8_hb_6",
+    ),
+    "heat_mode": BinarySensorSchema(
+        description="Configuration: Heating or cooling",
+        message="DEVICE_CONFIG",
+        keep_updated=False, # keep updated true ?
+        message_data="flag8_hb_7",
+    ),
     "dhw_setpoint_transfer_enabled": BinarySensorSchema(
         description="Remote boiler parameters: DHW setpoint transfer enabled",
         message="REMOTE",
@@ -560,6 +580,48 @@ BINARY_SENSORS: dict[str, BinarySensorSchema] = {
         message="REMOTE",
         keep_updated=False,
         message_data="flag8_lb_1",
+    ),
+    "service_request": BinarySensorSchema(
+        description="Service required",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="FAULT_FLAGS",
+        keep_updated=True,
+        message_data="flag8_hb_0",
+    ),
+    "lockout_reset": BinarySensorSchema(
+        description="Lockout Reset",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="FAULT_FLAGS",
+        keep_updated=True,
+        message_data="flag8_hb_1",
+    ),
+    "low_water_pressure": BinarySensorSchema(
+        description="Low water pressure fault",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="FAULT_FLAGS",
+        keep_updated=True,
+        message_data="flag8_hb_2",
+    ),
+    "flame_fault": BinarySensorSchema(
+        description="Flame fault",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="FAULT_FLAGS",
+        keep_updated=True,
+        message_data="flag8_hb_3",
+    ),
+    "air_pressure_fault": BinarySensorSchema(
+        description="Air pressure fault",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="FAULT_FLAGS",
+        keep_updated=True,
+        message_data="flag8_hb_4",
+    ),
+    "water_over_temp": BinarySensorSchema(
+        description="Water overtemperature",
+        device_class=DEVICE_CLASS_PROBLEM,
+        message="FAULT_FLAGS",
+        keep_updated=True,
+        message_data="flag8_hb_5",
     ),
 }
 
