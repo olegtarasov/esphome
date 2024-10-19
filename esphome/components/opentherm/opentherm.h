@@ -133,6 +133,24 @@ enum MessageId {
   RF_SIGNAL = 98,
   DHW_MODE = 99,
   OVERRIDE_FUNC = 100,
+
+  // Solar Specific Message IDs
+  SOLAR_MODE_FLAGS = 101, // hb0-2 Controller storage mode
+                          // lb0   Device fault
+                          // lb1-3 Device mode status
+                          // lb4-5 Device status
+  SOLAR_ASF = 102,
+  SOLAR_VERSION_ID = 103,
+  SOLAR_PRODUCT_ID = 104,
+  SOLAR_NUM_TSP = 105,
+  SOLAR_IDX_TSP = 106,
+  SOLAR_FHB_SIZE = 107,
+  SOLAR_FHB_IDX = 108,
+  SOLAR_STARTS = 109,
+  SOLAR_HOURS = 110,
+  SOLAR_ENERGY = 111,
+  SOLAR_TOTAL_ENERGY = 112,
+
   FAILED_BURNER_STARTS = 113,
   BURNER_FLAME_LOW = 114,
   OEM_DIAGNOSTIC = 115,
