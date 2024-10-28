@@ -134,11 +134,10 @@ enum MessageId {
   OVERRIDE_FUNC = 100,
 
   // Solar Specific Message IDs
-  SOLAR_MODE_FLAGS = 101, // hb0-2 Controller storage mode
-                          // lb0   Device fault
-                          // lb1-3 Device mode status
-                          // lb4-5 Device status
-
+  SOLAR_MODE_FLAGS = 101,  // hb0-2 Controller storage mode
+                           // lb0   Device fault
+                           // lb1-3 Device mode status
+                           // lb4-5 Device status
   SOLAR_ASF = 102,
   SOLAR_VERSION_ID = 103,
   SOLAR_PRODUCT_ID = 104,
