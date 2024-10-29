@@ -195,7 +195,17 @@ SENSORS: dict[str, SensorSchema] = {
         state_class=STATE_CLASS_MEASUREMENT,
         message="FAN_SPEED",
         keep_updated=True,
-        message_data="u16",
+        message_data="u8_lb",
+    ),
+    "fan_speed_setpoint": SensorSchema(
+        description="Boiler fan speed setpoint",
+        unit_of_measurement=UNIT_REVOLUTIONS_PER_MINUTE,
+        accuracy_decimals=0,
+        device_class=DEVICE_CLASS_EMPTY,
+        state_class=STATE_CLASS_MEASUREMENT,
+        message="FAN_SPEED",
+        keep_updated=True,
+        message_data="u8_hb",
     ),
     "flame_current": SensorSchema(
         description="Boiler flame current",
