@@ -132,9 +132,9 @@ enum MessageId {
   HVAC_IDX_TSP = 89,
   HVAC_FHB_SIZE = 90,
   HVAC_FHB_IDX = 91,
-  HVAC_BRAND = 93,     // u8 u8 Brand Index / Slave Brand name
-  HVAC_VERSION = 94,   // u8 u8 Brand Version Index / Slave product type/version
-  HVAC_SERIAL = 95,    // u8 u8 Brand Serial Number index / Slave product serialnumber
+  HVAC_BRAND = 93,     // u8 u8 Brand index / device brand name
+  HVAC_VERSION = 94,   // u8 u8 Brand version Index / device product type/version
+  HVAC_SERIAL = 95,    // u8 u8 Brand serial number index / device product serial number
   COOLING_HOURS = 96,  // u16 Cooling operation hours
   POWER_CYCLES = 97,   // u16 Power cycles
 
