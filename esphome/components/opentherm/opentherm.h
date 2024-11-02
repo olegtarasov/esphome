@@ -101,6 +101,7 @@ enum MessageId {
   FLAME_CURRENT = 36,
   ROOM_TEMP_CH2 = 37,
   REL_HUMIDITY = 38,
+  REMOTE_OVERRIDE_SP2 = 39,  // f8.8  Remote override room setpoint 2
   DHW_BOUNDS = 48,
   CH_BOUNDS = 49,
   OTC_CURVE_BOUNDS = 50,
@@ -111,8 +112,11 @@ enum MessageId {
   // HVAC Specific Message IDs
   HVAC_STATUS = 70,
   REL_VENT_SETPOINT = 71,
+  HVAC_FAULT = 72,       // flag8 u8  Fault flags/code
+  HVAC_DIAGNOSTIC = 73,  // OEM diagnostic code
   DEVICE_VENT = 74,
   HVAC_VER_ID = 75,
+  HVAC_PRODUCT_VER = 76,  // u8 u8
   REL_VENTILATION = 77,
   REL_HUMID_EXHAUST = 78,
   EXHAUST_CO2 = 79,
@@ -128,6 +132,11 @@ enum MessageId {
   HVAC_IDX_TSP = 89,
   HVAC_FHB_SIZE = 90,
   HVAC_FHB_IDX = 91,
+  HVAC_BRAND = 93,     // u8 u8 Brand Index / Slave Brand name
+  HVAC_VERSION = 94,   // u8 u8 Brand Version Index / Slave product type/version
+  HVAC_SERIAL = 95,    // u8 u8 Brand Serial Number index / Slave product serialnumber
+  COOLING_HOURS = 96,  // u16 Cooling operation hours
+  POWER_CYCLES = 97,   // u16 Power cycles
 
   RF_SIGNAL = 98,
   DHW_MODE = 99,
