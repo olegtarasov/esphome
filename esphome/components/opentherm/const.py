@@ -1,6 +1,7 @@
 OPENTHERM = "opentherm"
 
 CONF_OPENTHERM_ID = "opentherm_id"
+CONF_MESSAGE_DATA = "message_data"
 
 SENSOR = "sensor"
 BINARY_SENSOR = "binary_sensor"

@@ -9,7 +9,6 @@ from .schema import TSchema
 opentherm_ns = cg.esphome_ns.namespace("opentherm")
 OpenthermHub = opentherm_ns.class_("OpenthermHub", cg.Component)
 
-
 def define_has_component(component_type: str, keys: list[str]) -> None:
     cg.add_define(
         f"OPENTHERM_{component_type.upper()}_LIST(F, sep)",
@@ -130,6 +129,8 @@ async def component_to_code(
         id = conf[CONF_ID]
         if id and id.type == type:
             entity = await create(conf, key, hub)
+            if const.CONF_MESSAGE_DATA in conf:
+                schemas[key].message_data = conf[const.CONF_MESSAGE_DATA]
             cg.add(getattr(hub, f"set_{key}_{component_type.lower()}")(entity))
             keys.append(key)
 
