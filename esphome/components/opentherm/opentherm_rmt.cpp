@@ -5,6 +5,8 @@
  * Public License, which is compatible with GPLv3 license, which covers C++ part of ESPHome project.
  */
 
+#if defined(ESP32) || defined(USE_ESP_IDF)
+
 #include "opentherm_rmt.h"
 #include "esphome/core/helpers.h"
 #include <driver/gpio.h>
@@ -356,3 +358,5 @@ void OpenTherm::debug_opentherm_state() const {
 
 }  // namespace opentherm
 }  // namespace esphome
+
+#endif  // defined(ESP32) || defined(USE_ESP_IDF)

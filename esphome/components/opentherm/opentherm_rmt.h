@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#if defined(ESP32) || defined(USE_ESP_IDF)
 
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
@@ -57,3 +58,4 @@ class OpenTherm : public OpenThermBase {
 
 }  // namespace opentherm
 }  // namespace esphome
+#endif  // defined(ESP32) || defined(USE_ESP_IDF)
