@@ -25,7 +25,7 @@ class OpenTherm : public OpenThermBase {
 
   void stop() override;
 
-  void debug_opentherm_state() const override;
+  void debug_protocol_state() const override;
 
   static bool timer_isr(OpenTherm *arg);
   static void esp8266_timer_isr();

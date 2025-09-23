@@ -32,7 +32,7 @@ class OpenTherm : public OpenThermBase {
 
   void stop() override;
 
-  void debug_opentherm_state() const override;
+  void debug_protocol_state() const override;
 
  private:
   // RMT resources
@@ -48,12 +48,16 @@ class OpenTherm : public OpenThermBase {
   // RMT clock resolution in Hz (1 MHz => 1 tick == 1 us)
   static constexpr uint32_t RMT_RESOLUTION_HZ = 1000000u;
 
+  uint8_t bit_idx_ = 0;
+
   bool rmt_init_();
   void rmt_read_();
   void rmt_write_();
   bool decode_rmt_symbols_(size_t num_symbols);
 
   static bool rmt_read_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *evt, void *arg);
+
+  void set_protocol_error_(ProtocolErrorType error_type);
 };
 
 }  // namespace opentherm

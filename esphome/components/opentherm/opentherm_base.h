@@ -199,13 +199,6 @@ struct OpenthermData {
   void s16(int16_t value);
 };
 
-/// OpenTherm protocol error details
-struct OpenThermProtocolError {
-  ProtocolErrorType error_type;
-  size_t bit_index;
-  uint32_t data;
-};
-
 /// Formats protocol error type as string
 const char *protocol_error_to_str(ProtocolErrorType error_type);
 /// Formats protocol message type as string
@@ -217,8 +210,6 @@ const char *message_id_to_str(MessageId id);
 
 /// Prints OpenTherm data frame with detailed debug information
 void debug_data(OpenthermData &data);
-/// Prints OpenTherm error with debug level logging
-void debug_error(OpenThermProtocolError &error);
 
 /// Checks parity of a value
 bool check_parity(uint32_t val);
@@ -245,7 +236,7 @@ class OpenThermBase {
   virtual void stop();
 
   /// Prints debug information that is specific to OpenTherm component implementation.
-  virtual void debug_opentherm_state() const {}
+  virtual void debug_protocol_state() const {}
 
   /// Use this to retrieve data frame captured by listen() function. Data frame is ready when has_message() function
   /// returns true. This function can be called multiple times until stop() is called.
@@ -286,7 +277,7 @@ class OpenThermBase {
   OperationMode get_mode() { return mode_; }
 
   /// Get protocol error details in case a protocol error occurred.
-  const OpenThermProtocolError &get_protocol_error() const { return this->error_; }
+  ProtocolErrorType get_protocol_error_type() const { return this->error_type_; }
 
  protected:
   ~OpenThermBase() = default;
@@ -295,10 +286,8 @@ class OpenThermBase {
   InternalGPIOPin *out_pin_{};
 
   OperationMode mode_{OperationMode::IDLE};
-  OpenThermProtocolError error_{};
+  ProtocolErrorType error_type_;
   uint32_t data_{};
-
-  void set_protocol_error_(ProtocolErrorType error_type, size_t bit_index);
 };
 
 }  // namespace opentherm

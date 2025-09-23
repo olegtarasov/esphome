@@ -60,8 +60,6 @@ void OpenTherm::stop() {
   OpenThermBase::stop();
 }
 
-void OpenTherm::debug_opentherm_state() const {}
-
 bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
   if (arg->mode_ == OperationMode::LISTEN) {
     if (arg->timeout_counter_ == 0) {
@@ -84,7 +82,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
       if (arg->clock_ == 1 && arg->capture_ > 0xF) {
         // no transition in the middle of the bit
         arg->mode_ = OperationMode::ERROR_PROTOCOL;
-        arg->error_.error_type = ProtocolErrorType::NO_TRANSITION;
+        arg->error_type_ = ProtocolErrorType::NO_TRANSITION;
         arg->stop_timer_();
         return false;
       } else if (arg->clock_ == 1 || arg->capture_ > 0xF) {
@@ -99,7 +97,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
           } else {
             // end of data not verified, invalid data
             arg->mode_ = OperationMode::ERROR_PROTOCOL;
-            arg->error_.error_type = stop_bit_error;
+            arg->error_type_ = stop_bit_error;
             arg->stop_timer_();
             return false;
           }
@@ -116,7 +114,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
     } else if (arg->capture_ > 0xFF) {
       // no change for too long, invalid manchester encoding
       arg->mode_ = OperationMode::ERROR_PROTOCOL;
-      arg->error_.error_type = ProtocolErrorType::NO_CHANGE_TOO_LONG;
+      arg->error_type_ = ProtocolErrorType::NO_CHANGE_TOO_LONG;
       arg->stop_timer_();
       return false;
     }
@@ -196,6 +194,11 @@ void IRAM_ATTR OpenTherm::write_bit_(uint8_t high, uint8_t clock) {
   } else {                                    // right part of manchester encoding
     this->isr_out_pin_.digital_write(high);   // high means logical 0 to protocol
   }
+}
+
+void OpenTherm::debug_protocol_state() const {
+  ESP_LOGD(TAG, "data: %s; clock: %s; capture: %s; bit_pos: %s", format_hex(this->data_).c_str(),
+           to_string(clock_).c_str(), format_bin(this->capture_).c_str(), to_string(this->bit_pos_).c_str());
 }
 
 }  // namespace opentherm

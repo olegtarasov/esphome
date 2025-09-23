@@ -363,21 +363,19 @@ void OpenthermHub::stop_opentherm_() {
 }
 
 void OpenthermHub::handle_protocol_error_() {
-  auto error = this->opentherm_->get_protocol_error();
-  ESP_LOGW(TAG, "OpenTherm protocol error: %s", protocol_error_to_str(error.error_type));
-  debug_error(error);
-  this->opentherm_->debug_opentherm_state();
   this->stop_opentherm_();
+  ESP_LOGW(TAG, "OpenTherm protocol error: %s", protocol_error_to_str(this->opentherm_->get_protocol_error_type()));
+  this->opentherm_->debug_protocol_state();
 }
 
 void OpenthermHub::handle_timeout_error_() {
-  ESP_LOGW(TAG, "Timeout while waiting for response from device");
   this->stop_opentherm_();
+  ESP_LOGW(TAG, "Timeout while waiting for response from device");
 }
 
 void OpenthermHub::handle_rmt_error_() {
-  ESP_LOGW(TAG, "OpenTherm RMT error");
   this->stop_opentherm_();
+  ESP_LOGW(TAG, "OpenTherm RMT error");
 }
 
 void OpenthermHub::dump_config() {

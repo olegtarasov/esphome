@@ -159,13 +159,6 @@ void debug_data(OpenthermData &data) {
            message_type_to_str((MessageType) data.type), to_string(data.id).c_str(), to_string(data.valueHB).c_str(),
            to_string(data.valueLB).c_str(), to_string(data.u16()).c_str(), to_string(data.f88()).c_str());
 }
-void debug_error(OpenThermProtocolError &error) {
-  ESP_LOGD(TAG,
-           "OpenTherm protocol error: %s\n"
-           "Bit index: %u\n"
-           "Data: %s",
-           protocol_error_to_str(error.error_type), error.bit_index, format_hex(error.data).c_str());
-}
 
 bool IRAM_ATTR check_parity(uint32_t val) {
   val ^= val >> 16;
@@ -239,13 +232,6 @@ bool OpenThermBase::get_message(OpenthermData &data) const {
   data.valueHB = (this->data_ >> 8) & 0xFF;
   data.valueLB = this->data_ & 0xFF;
   return true;
-}
-
-void OpenThermBase::set_protocol_error_(ProtocolErrorType error_type, size_t bit_index) {
-  this->mode_ = OperationMode::ERROR_PROTOCOL;
-  this->error_.error_type = error_type;
-  this->error_.bit_index = bit_index;
-  this->error_.data = data_;
 }
 }  // namespace opentherm
 }  // namespace esphome
