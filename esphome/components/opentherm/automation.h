@@ -2,7 +2,7 @@
 
 #include "esphome/core/automation.h"
 #include "hub.h"
-#include "opentherm.h"
+#include "opentherm_rmt.h"
 
 namespace esphome {
 namespace opentherm {

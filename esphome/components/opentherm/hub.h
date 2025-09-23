@@ -2,11 +2,12 @@
 
 #include <vector>
 #include "esphome/core/component.h"
-#include "esphome/core/defines.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
 
-#include "opentherm.h"
+#if defined(ESP32) || defined(USE_ESP_IDF)
+#include "opentherm_rmt.h"
+#endif
 
 #ifdef OPENTHERM_USE_SENSOR
 #include "esphome/components/sensor/sensor.h"
