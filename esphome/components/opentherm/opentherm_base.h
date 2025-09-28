@@ -207,8 +207,12 @@ const char *operation_mode_to_str(OperationMode mode);
 /// Formats message id as string
 const char *message_id_to_str(MessageId id);
 
+#if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_DEBUG
 /// Prints OpenTherm data frame with detailed debug information
-void debug_data(OpenthermData &data);
+void debug_data(const OpenthermData &data);
+#else
+inline void debug_data(const OpenthermData &data) {};
+#endif
 
 /// Checks parity of a value
 bool check_parity(uint32_t val);

@@ -151,14 +151,16 @@ const char *message_id_to_str(MessageId id) {
   }
 }
 
-void debug_data(OpenthermData &data) {
+#if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_DEBUG
+void debug_data(const OpenthermData &data) {
   char type_buf[9], id_buf[9], hb_buf[9], lb_buf[9];
-  ESP_LOGD(TAG, "%s %s %s %s", format_bin_to(type_buf, data.type), format_bin_to(id_buf, data.id),
+  ESP_LOGV(TAG, "%s %s %s %s", format_bin_to(type_buf, data.type), format_bin_to(id_buf, data.id),
            format_bin_to(hb_buf, data.valueHB), format_bin_to(lb_buf, data.valueLB));
   ESP_LOGD(TAG, "type: %s; id: %u; HB: %u; LB: %u; uint_16: %u; float: %f",
            message_type_to_str((MessageType) data.type), data.id, data.valueHB, data.valueLB, data.get_u16(),
            data.get_f88());
 }
+#endif
 
 bool IRAM_ATTR check_parity(uint32_t val) {
   val ^= val >> 16;
