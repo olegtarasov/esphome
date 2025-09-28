@@ -211,7 +211,7 @@ const char *message_id_to_str(MessageId id);
 /// Prints OpenTherm data frame with detailed debug information
 void debug_data(const OpenthermData &data);
 #else
-inline void debug_data(const OpenthermData &data) {};
+inline void debug_data(const OpenthermData &data){};
 #endif
 
 /// Checks parity of a value

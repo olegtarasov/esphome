@@ -5,7 +5,7 @@ namespace esphome::opentherm {
 
 static const char *const TAG = "opentherm.output";
 
-void opentherm::OpenthermOutput::write_state(float state) {
+void OpenthermOutput::write_state(float state) {
   ESP_LOGD(TAG, "Received state: %.2f. Min value: %.2f, max value: %.2f", state, min_value_, max_value_);
 #ifdef USE_OUTPUT_FLOAT_POWER_SCALING
   bool zero_means_zero = this->zero_means_zero_;
