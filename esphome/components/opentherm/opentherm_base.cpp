@@ -173,11 +173,11 @@ bool IRAM_ATTR check_parity(uint32_t val) {
 
 OpenThermBase::OpenThermBase(InternalGPIOPin *in_pin, InternalGPIOPin *out_pin) : in_pin_(in_pin), out_pin_(out_pin) {}
 
-float OpenthermData::get_f88() { return ((float) this->get_s16()) / 256.0f; }
+float OpenthermData::get_f88() const { return ((float) this->get_s16()) / 256.0f; }
 
 void OpenthermData::set_f88(float value) { this->set_s16((int16_t) (value * 256)); }
 
-uint16_t OpenthermData::get_u16() {
+uint16_t OpenthermData::get_u16() const {
   uint16_t const value = this->valueHB;
   return (value << 8) | this->valueLB;
 }
@@ -187,7 +187,7 @@ void OpenthermData::set_u16(uint16_t value) {
   this->valueHB = (value >> 8) & 0xFF;
 }
 
-int16_t OpenthermData::get_s16() {
+int16_t OpenthermData::get_s16() const {
   int16_t const value = this->valueHB;
   return (value << 8) | this->valueLB;
 }

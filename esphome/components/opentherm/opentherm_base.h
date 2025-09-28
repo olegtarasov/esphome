@@ -180,19 +180,19 @@ struct OpenthermData {
   OpenthermData() : type(0), id(0), valueHB(0), valueLB(0) {}
 
   /// @return float representation of data packet value
-  float get_f88();
+  float get_f88() const;
 
   /// @param float number to set as value of this data packet
   void set_f88(float value);
 
   /// @return unsigned 16b integer representation of data packet value
-  uint16_t get_u16();
+  uint16_t get_u16() const;
 
   /// @param unsigned 16b integer number to set as value of this data packet
   void set_u16(uint16_t value);
 
   /// @return signed 16b integer representation of data packet value
-  int16_t get_s16();
+  int16_t get_s16() const;
 
   /// @param signed 16b integer number to set as value of this data packet
   void set_s16(int16_t value);
