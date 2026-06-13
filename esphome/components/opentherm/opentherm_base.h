@@ -239,7 +239,7 @@ class OpenThermBase {
   virtual void stop();
 
   /// Prints debug information that is specific to OpenTherm component implementation.
-  virtual void debug_protocol_state() const {}
+  virtual void log_protocol_state() const {}
 
   /// Use this to retrieve data frame captured by listen() function. Data frame is ready when has_message() function
   /// returns true. This function can be called multiple times until stop() is called.

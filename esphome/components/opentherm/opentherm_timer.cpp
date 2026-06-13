@@ -1,22 +1,20 @@
-/*
- * OpenTherm protocol implementation. Originally taken from https://github.com/jpraus/arduino-opentherm, but
- * heavily modified to comply with ESPHome coding standards and provide better logging.
- * Original code is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
- * Public License, which is compatible with GPLv3 license, which covers C++ part of ESPHome project.
- */
+#ifdef USE_ESP32
+#include <soc/soc_caps.h>
+#endif
 
-#ifdef ESP8266
+#if defined(ESP8266) || (defined(USE_ESP32) && !SOC_RMT_SUPPORTED)
 
-#include "opentherm_esp8266.h"
+#include "opentherm_timer.h"
 #include "esphome/core/helpers.h"
-#include "Arduino.h"
-#include <cinttypes>
+#include <string>
 
 namespace esphome::opentherm {
 
 static const char *const TAG = "opentherm";
 
+#ifdef ESP8266
 OpenTherm *OpenTherm::instance = nullptr;
+#endif
 
 OpenTherm::OpenTherm(InternalGPIOPin *in_pin, InternalGPIOPin *out_pin) : OpenThermBase(in_pin, out_pin) {
   this->isr_in_pin_ = in_pin->to_isr();
@@ -24,37 +22,59 @@ OpenTherm::OpenTherm(InternalGPIOPin *in_pin, InternalGPIOPin *out_pin) : OpenTh
 }
 
 bool OpenTherm::initialize() {
-  bool base_result = OpenThermBase::initialize();
-  if (!base_result) {
+  if (!OpenThermBase::initialize())
     return false;
-  }
 
-  OpenTherm::instance = this;
   this->out_pin_->digital_write(true);
-
+#ifdef ESP8266
+  OpenTherm::instance = this;
   return true;
+#endif
+#ifdef USE_ESP32
+  return this->init_esp32_timer_();
+#endif
 }
 
 void OpenTherm::listen() {
+  static constexpr int32_t DEVICE_TIMEOUT = 800;
+
   this->stop_timer_();
   OpenThermBase::listen();
   this->timeout_counter_ = DEVICE_TIMEOUT * 5;  // timer_ ticks at 5 ticks/ms
   this->bit_pos_ = 0;
+
   this->start_read_timer_();
 }
 
 void OpenTherm::send(OpenthermData &data) {
   this->stop_timer_();
   OpenThermBase::send(data);
-  this->clock_ = 1;  // clock starts at HIGH
-  // Count down: start bit, 32 data bits, stop bit.
-  this->bit_pos_ = STOP_BIT_POSITION;
+
+  this->clock_ = 1;     // clock starts at HIGH
+  this->bit_pos_ = 33;  // count down (33 == start bit, 32-1 data, 0 == stop bit)
   this->start_write_timer_();
 }
 
 void OpenTherm::stop() {
   this->stop_timer_();
   OpenThermBase::stop();
+}
+
+void OpenTherm::log_protocol_state() const {
+  char data_hex[format_hex_size(sizeof(this->data_))];
+  char capture_bin[format_bin_size(sizeof(this->capture_))];
+  ESP_LOGD(TAG, "data: %s; clock: %u; capture: %s; bit_pos: %u", format_hex_to(data_hex, this->data_), this->clock_,
+           format_bin_to(capture_bin, this->capture_), this->bit_pos_);
+}
+
+void IRAM_ATTR OpenTherm::read_() {
+  this->data_ = 0;
+  this->bit_pos_ = 0;
+  this->mode_ = OperationMode::READ;
+  this->capture_ = 1;         // reset counter and add as if read start bit
+  this->clock_ = 1;           // clock is high at the start of comm
+  this->start_read_timer_();  // get us into 1/4 of manchester code. 5 timer ticks constitute 1 ms, which is 1 bit
+                              // period in OpenTherm.
 }
 
 bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
@@ -84,7 +104,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
         return false;
       } else if (arg->clock_ == 1 || arg->capture_ > 0xF) {
         // transition in the middle of the bit OR no transition between two bit, both are valid data points
-        if (arg->bit_pos_ == STOP_BIT_POSITION) {
+        if (arg->bit_pos_ == 33) {
           // expecting stop bit
           auto stop_bit_error = arg->verify_stop_bit_(last);
           if (stop_bit_error == ProtocolErrorType::NO_ERROR) {
@@ -118,7 +138,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
     arg->capture_ = (arg->capture_ << 1) | value;
   } else if (arg->mode_ == OperationMode::WRITE) {
     // write data to pin
-    if (arg->bit_pos_ == STOP_BIT_POSITION || arg->bit_pos_ == 0) {  // start or stop bit
+    if (arg->bit_pos_ == 33 || arg->bit_pos_ == 0) {  // start bit
       arg->write_bit_(1, arg->clock_);
     } else {  // data bits
       arg->write_bit_(read_bit(arg->data_, arg->bit_pos_ - 1), arg->clock_);
@@ -138,22 +158,98 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
   return false;
 }
 
-void IRAM_ATTR OpenTherm::esp8266_timer_isr() { OpenTherm::timer_isr(OpenTherm::instance); }
-
-void IRAM_ATTR OpenTherm::read_() {
-  this->data_ = 0;
-  this->bit_pos_ = 0;
-  this->mode_ = OperationMode::READ;
-  this->capture_ = 1;         // reset counter and add as if read start bit
-  this->clock_ = 1;           // clock is high at the start of comm
-  this->start_read_timer_();  // get us into 1/4 of manchester code. 5 timer ticks constitute 1 ms, which is 1 bit
-  // period in OpenTherm.
-}
-
 void IRAM_ATTR OpenTherm::bit_read_(uint8_t value) {
   this->data_ = (this->data_ << 1) | value;
   this->bit_pos_++;
 }
+
+ProtocolErrorType IRAM_ATTR OpenTherm::verify_stop_bit_(uint8_t value) {
+  if (value) {  // stop bit detected
+    return check_parity(this->data_) ? ProtocolErrorType::NO_ERROR : ProtocolErrorType::PARITY_ERROR;
+  } else {  // no stop bit detected, error
+    return ProtocolErrorType::INVALID_START_STOP_BIT;
+  }
+}
+
+void IRAM_ATTR OpenTherm::write_bit_(uint8_t high, uint8_t clock) {
+  if (clock == 1) {                           // left part of manchester encoding
+    this->isr_out_pin_.digital_write(!high);  // low means logical 1 to protocol
+  } else {                                    // right part of manchester encoding
+    this->isr_out_pin_.digital_write(high);   // high means logical 0 to protocol
+  }
+}
+
+#ifdef USE_ESP32
+
+bool IRAM_ATTR OpenTherm::timer_isr(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx) {
+  return OpenTherm::timer_isr(static_cast<OpenTherm *>(user_ctx));
+}
+
+bool OpenTherm::init_esp32_timer_() {
+  // 80MHz / 80 = 1MHz resolution (1µs per tick)
+  gptimer_config_t config = {
+      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+      .direction = GPTIMER_COUNT_UP,
+      .resolution_hz = 1000000,
+  };
+
+  esp_err_t result = gptimer_new_timer(&config, &this->timer_handle_);
+  if (result != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to create timer: %s", esp_err_to_name(result));
+    return false;
+  }
+
+  gptimer_event_callbacks_t cbs = {
+      .on_alarm = OpenTherm::timer_isr,
+  };
+  result = gptimer_register_event_callbacks(this->timer_handle_, &cbs, this);
+  if (result != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to register timer callback: %s", esp_err_to_name(result));
+    gptimer_del_timer(this->timer_handle_);
+    this->timer_handle_ = nullptr;
+    return false;
+  }
+
+  result = gptimer_enable(this->timer_handle_);
+  if (result != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to enable timer: %s", esp_err_to_name(result));
+    gptimer_del_timer(this->timer_handle_);
+    this->timer_handle_ = nullptr;
+    return false;
+  }
+
+  return true;
+}
+
+void IRAM_ATTR OpenTherm::start_esp32_timer_(uint64_t alarm_value) {
+  this->alarm_config_.alarm_count = alarm_value;
+  gptimer_set_alarm_action(this->timer_handle_, &this->alarm_config_);
+  gptimer_start(this->timer_handle_);
+}
+
+// 5 kHz timer_
+void IRAM_ATTR OpenTherm::start_read_timer_() {
+  InterruptLock const lock;
+  this->start_esp32_timer_(200);
+}
+
+// 2 kHz timer_
+void IRAM_ATTR OpenTherm::start_write_timer_() {
+  InterruptLock const lock;
+  this->start_esp32_timer_(500);
+}
+
+void IRAM_ATTR OpenTherm::stop_timer_() {
+  InterruptLock const lock;
+  gptimer_stop(this->timer_handle_);
+  gptimer_set_raw_count(this->timer_handle_, 0);
+}
+
+#endif  // USE_ESP32
+
+#ifdef ESP8266
+
+void IRAM_ATTR OpenTherm::esp8266_timer_isr() { OpenTherm::timer_isr(OpenTherm::instance); }
 
 // 5 kHz timer_
 void IRAM_ATTR OpenTherm::start_read_timer_() {
@@ -177,26 +273,8 @@ void IRAM_ATTR OpenTherm::stop_timer_() {
   timer1_detachInterrupt();
 }
 
-ProtocolErrorType IRAM_ATTR OpenTherm::verify_stop_bit_(uint8_t value) {
-  if (value) {  // stop bit detected
-    return check_parity(this->data_) ? ProtocolErrorType::NO_ERROR : ProtocolErrorType::PARITY_ERROR;
-  } else {  // no stop bit detected, error
-    return ProtocolErrorType::INVALID_START_STOP_BIT;
-  }
-}
-
-void IRAM_ATTR OpenTherm::write_bit_(uint8_t high, uint8_t clock) {
-  if (clock == 1) {                           // left part of manchester encoding
-    this->isr_out_pin_.digital_write(!high);  // low means logical 1 to protocol
-  } else {                                    // right part of manchester encoding
-    this->isr_out_pin_.digital_write(high);   // high means logical 0 to protocol
-  }
-}
-
-void OpenTherm::debug_protocol_state() const {
-  ESP_LOGD(TAG, "data: 0x%08" PRIx32 "; clock: %u; capture: 0x%08" PRIx32 "; bit_pos: %u", this->data_, this->clock_,
-           this->capture_, this->bit_pos_);
-}
+#endif  // ESP8266
 
 }  // namespace esphome::opentherm
-#endif  // ESP8266
+
+#endif

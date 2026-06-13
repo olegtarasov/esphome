@@ -6,7 +6,9 @@
  */
 
 #pragma once
-#if defined(ESP32) || defined(USE_ESP_IDF)
+#ifdef USE_ESP32
+#include <soc/soc_caps.h>
+#if SOC_RMT_SUPPORTED
 
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
@@ -31,7 +33,7 @@ class OpenTherm final : public OpenThermBase {
 
   void stop() override;
 
-  void debug_protocol_state() const override;
+  void log_protocol_state() const override;
 
  private:
   // RMT resources
@@ -63,4 +65,5 @@ class OpenTherm final : public OpenThermBase {
 };
 
 }  // namespace esphome::opentherm
-#endif  // defined(ESP32) || defined(USE_ESP_IDF)
+#endif  // SOC_RMT_SUPPORTED
+#endif  // USE_ESP32

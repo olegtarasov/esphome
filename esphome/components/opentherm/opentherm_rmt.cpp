@@ -5,7 +5,9 @@
  * Public License, which is compatible with GPLv3 license, which covers C++ part of ESPHome project.
  */
 
-#if defined(ESP32) || defined(USE_ESP_IDF)
+#ifdef USE_ESP32
+#include <soc/soc_caps.h>
+#if SOC_RMT_SUPPORTED
 
 #include "opentherm_rmt.h"
 #include "esphome/core/helpers.h"
@@ -365,7 +367,7 @@ void IRAM_ATTR OpenTherm::set_protocol_error_(ProtocolErrorType error_type) {
   this->error_type_ = error_type;
 }
 
-void OpenTherm::debug_protocol_state() const {
+void OpenTherm::log_protocol_state() const {
   ESP_LOGD(TAG,
            "OpenTherm protocol error: %s\n"
            "  Bit index: %u\n"
@@ -386,4 +388,5 @@ void OpenTherm::debug_protocol_state() const {
 
 }  // namespace esphome::opentherm
 
-#endif  // defined(ESP32) || defined(USE_ESP_IDF)
+#endif  // SOC_RMT_SUPPORTED
+#endif  // USE_ESP32
