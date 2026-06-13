@@ -3,8 +3,7 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
 
-namespace esphome {
-namespace opentherm {
+namespace esphome::opentherm {
 
 template<class T> constexpr T read_bit(T value, uint8_t bit) { return (value >> bit) & 0x01; }
 
@@ -182,7 +181,7 @@ struct OpenthermData {
   /**
    * @return float representation of data packet value
    */
-  float f88();
+  float f88() const;
 
   /**
    * @param float number to set as value of this data packet
@@ -192,7 +191,7 @@ struct OpenthermData {
   /**
    * @return unsigned 16b integer representation of data packet value
    */
-  uint16_t u16();
+  uint16_t u16() const;
 
   /**
    * @param unsigned 16b integer number to set as value of this data packet
@@ -202,7 +201,7 @@ struct OpenthermData {
   /**
    * @return signed 16b integer representation of data packet value
    */
-  int16_t s16();
+  int16_t s16() const;
 
   /**
    * @param signed 16b integer number to set as value of this data packet
@@ -216,7 +215,11 @@ const char *message_type_to_str(MessageType message_type);
 const char *operation_mode_to_str(OperationMode mode);
 const char *message_id_to_str(MessageId id);
 
-void debug_data(OpenthermData &data);
+#if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_DEBUG
+void debug_data(const OpenthermData &data);
+#else
+inline void debug_data(const OpenthermData &data){};
+#endif
 
 bool check_parity(uint32_t val);
 
@@ -267,5 +270,4 @@ class OpenThermBase {
   uint32_t data_{};
 };
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm

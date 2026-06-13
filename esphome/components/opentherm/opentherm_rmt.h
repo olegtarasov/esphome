@@ -1,6 +1,8 @@
 #pragma once
 
 #ifdef USE_ESP32
+#include <soc/soc_caps.h>
+#if SOC_RMT_SUPPORTED
 
 #include <string>
 #include "opentherm_base.h"
@@ -13,8 +15,7 @@
 #include <esp_err.h>
 #include <driver/gpio.h>
 
-namespace esphome {
-namespace opentherm {
+namespace esphome::opentherm {
 
 class OpenTherm : public OpenThermBase {
  public:
@@ -53,13 +54,14 @@ class OpenTherm : public OpenThermBase {
   void rmt_read_();
   void rmt_write_();
   static bool rmt_read_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *evt, void *arg);
+  static bool rmt_write_callback(rmt_channel_handle_t channel, const rmt_tx_done_event_data_t *evt, void *arg);
 
   void set_protocol_error_(ProtocolErrorType error_type);
 
   bool decode_rmt_symbols_(size_t num_symbols);
 };
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm
 
-#endif
+#endif  // SOC_RMT_SUPPORTED
+#endif  // USE_ESP32

@@ -3,7 +3,13 @@ from typing import Any
 import esphome.codegen as cg
 from esphome.components import number
 import esphome.config_validation as cv
-from esphome.const import CONF_INITIAL_VALUE, CONF_RESTORE_VALUE, CONF_STEP
+from esphome.const import (
+    CONF_INITIAL_VALUE,
+    CONF_MAX_VALUE,
+    CONF_MIN_VALUE,
+    CONF_RESTORE_VALUE,
+    CONF_STEP,
+)
 
 from .. import const, generate, input, schema, validate
 
@@ -11,16 +17,22 @@ DEPENDENCIES = [const.OPENTHERM]
 COMPONENT_TYPE = const.NUMBER
 
 OpenthermNumber = generate.opentherm_ns.class_(
-    "OpenthermNumber", number.Number, cg.Component, input.OpenthermInput
+    "OpenthermNumber",
+    number.Number,
+    cg.Component,
+    input.OpenthermInput,
+    generate.MessageProcessor,
 )
 
 
-async def new_openthermnumber(config: dict[str, Any]) -> cg.Pvariable:
+async def new_openthermnumber(
+    config: dict[str, Any], key: str, hub: cg.MockObj
+) -> cg.MockObj:
     var = await number.new_number(
         config,
-        min_value=config[input.CONF_min_value],
-        max_value=config[input.CONF_max_value],
-        step=config[input.CONF_step],
+        min_value=config[CONF_MIN_VALUE],
+        max_value=config[CONF_MAX_VALUE],
+        step=config[CONF_STEP],
     )
     await cg.register_component(var, config)
     input.generate_setters(var, config)
@@ -56,11 +68,10 @@ CONFIG_SCHEMA = validate.create_component_schema(
 
 
 async def to_code(config: dict[str, Any]) -> None:
-    keys = await generate.component_to_code(
+    await generate.component_to_code(
         COMPONENT_TYPE,
         schema.INPUTS,
         OpenthermNumber,
-        generate.create_only_conf(new_openthermnumber),
+        new_openthermnumber,
         config,
     )
-    generate.define_readers(COMPONENT_TYPE, keys)

@@ -7,8 +7,7 @@
 #include "esphome/components/select/select.h"
 #include "esphome/core/component.h"
 
-namespace esphome {
-namespace modbus_controller {
+namespace esphome::modbus_controller {
 
 class ModbusSelect : public Component, public select::Select, public SensorItem {
  public:
@@ -38,7 +37,7 @@ class ModbusSelect : public Component, public select::Select, public SensorItem 
 
   void dump_config() override;
   void parse_and_publish(const std::vector<uint8_t> &data) override;
-  void control(const std::string &value) override;
+  void control(size_t index) override;
 
  protected:
   std::vector<int64_t> mapping_{};
@@ -49,5 +48,4 @@ class ModbusSelect : public Component, public select::Select, public SensorItem 
   optional<write_transform_func_t> write_transform_func_{nullopt};
 };
 
-}  // namespace modbus_controller
-}  // namespace esphome
+}  // namespace esphome::modbus_controller

@@ -38,7 +38,7 @@ number:
   - platform: lvgl
     widget: slider_id
     name: LVGL Slider Number
-    update_on_release: true
+    trigger: on_release
     restore_value: true
   - platform: lvgl
     widget: lv_arc
@@ -115,8 +115,8 @@ wifi:
   password: PASSWORD123
 
 time:
-  platform: sntp
-  id: time_id
+  - platform: sntp
+    id: sntp_time
 
 text:
   - id: lvgl_text

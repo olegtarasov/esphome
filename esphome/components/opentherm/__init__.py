@@ -1,13 +1,13 @@
-import logging
 from typing import Any
 
 from esphome import automation, pins
 import esphome.codegen as cg
-from esphome.components import sensor
+from esphome.components import esp32, esp32_rmt, sensor
 import esphome.config_validation as cv
 from esphome.const import CONF_ID, CONF_TRIGGER_ID, PLATFORM_ESP32, PLATFORM_ESP8266
+from esphome.core import CORE
 
-from . import const, generate, schema, validate
+from . import generate, schema, validate
 
 CODEOWNERS = ["@olegtarasov"]
 MULTI_CONF = True
@@ -22,7 +22,6 @@ CONF_CH2_ACTIVE = "ch2_active"
 CONF_SUMMER_MODE_ACTIVE = "summer_mode_active"
 CONF_DHW_BLOCK = "dhw_block"
 CONF_SYNC_MODE = "sync_mode"
-CONF_OPENTHERM_VERSION = "opentherm_version"  # Deprecated, will be removed
 CONF_BEFORE_SEND = "before_send"
 CONF_BEFORE_PROCESS_RESPONSE = "before_process_response"
 
@@ -36,7 +35,6 @@ BeforeProcessResponseTrigger = generate.opentherm_ns.class_(
     automation.Trigger.template(generate.OpenthermData.operator("ref")),
 )
 
-_LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
@@ -52,7 +50,6 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_SUMMER_MODE_ACTIVE, False): cv.boolean,
             cv.Optional(CONF_DHW_BLOCK, False): cv.boolean,
             cv.Optional(CONF_SYNC_MODE, False): cv.boolean,
-            cv.Optional(CONF_OPENTHERM_VERSION): cv.positive_float,  # Deprecated
             cv.Optional(CONF_BEFORE_SEND): automation.validate_automation(
                 {
                     cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(BeforeSendTrigger),
@@ -83,6 +80,14 @@ CONFIG_SCHEMA = cv.All(
 
 
 async def to_code(config: dict[str, Any]) -> None:
+    if CORE.is_esp32:
+        # RMT capable variants use the RMT driver; the rest fall back to a
+        # gptimer based software implementation.
+        if esp32.get_esp32_variant() in esp32_rmt.VARIANTS_NO_RMT:
+            esp32.include_builtin_idf_component("esp_driver_gptimer")
+        else:
+            esp32.include_builtin_idf_component("esp_driver_rmt")
+
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 
@@ -107,33 +112,18 @@ async def to_code(config: dict[str, Any]) -> None:
             continue
         if key in schema.INPUTS:
             input_sensor = await cg.get_variable(value)
-            cg.add(getattr(var, f"set_{key}_{const.INPUT_SENSOR}")(input_sensor))
+            generate.add_input_sensor(var, key, input_sensor)
             input_sensors.append(key)
         elif key in schema.SETTINGS:
-            if value == schema.SETTINGS[key].default_value:
-                continue
-            cg.add(getattr(var, f"set_{key}_{const.SETTING}")(value))
+            generate.add_setting(var, key, value)
             settings.append(key)
         else:
-            if key == CONF_OPENTHERM_VERSION:
-                _LOGGER.warning(
-                    "opentherm_version is deprecated and will be removed in esphome 2025.2.0\n"
-                    "Please change to 'opentherm_version_controller'."
-                )
             cg.add(getattr(var, f"set_{key}")(value))
 
     if len(input_sensors) > 0:
-        generate.define_has_component(const.INPUT_SENSOR, input_sensors)
-        generate.define_message_handler(
-            const.INPUT_SENSOR, input_sensors, schema.INPUTS
-        )
-        generate.define_readers(const.INPUT_SENSOR, input_sensors)
         generate.add_messages(var, input_sensors, schema.INPUTS)
 
     if len(settings) > 0:
-        generate.define_has_settings(settings, schema.SETTINGS)
-        generate.define_message_handler(const.SETTING, settings, schema.SETTINGS)
-        generate.define_setting_readers(const.SETTING, settings)
         generate.add_messages(var, settings, schema.SETTINGS)
 
     for conf in config.get(CONF_BEFORE_SEND, []):
@@ -147,3 +137,6 @@ async def to_code(config: dict[str, Any]) -> None:
         await automation.build_automation(
             trigger, [(generate.OpenthermData.operator("ref"), "x")], conf
         )
+
+
+FINAL_VALIDATE_SCHEMA = validate.final_validate

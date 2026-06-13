@@ -1,4 +1,6 @@
 #ifdef USE_ESP32
+#include <soc/soc_caps.h>
+#if SOC_RMT_SUPPORTED
 
 #include "opentherm_rmt.h"
 #include "esphome/core/helpers.h"
@@ -8,8 +10,7 @@
 #include <esp_err.h>
 #include <string>
 
-namespace esphome {
-namespace opentherm {
+namespace esphome::opentherm {
 
 using std::string;
 
@@ -136,6 +137,15 @@ bool OpenTherm::rmt_init_() {
     return false;
   }
 
+  // TX done callback
+  rmt_tx_event_callbacks_t tx_cbs = {};
+  tx_cbs.on_trans_done = &OpenTherm::rmt_write_callback;
+  if (rmt_tx_register_event_callbacks(this->tx_channel_, &tx_cbs, this) != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to register RMT TX callback");
+    this->mode_ = OperationMode::ERROR_RMT;
+    return false;
+  }
+
   return true;
 }
 
@@ -185,15 +195,7 @@ void OpenTherm::rmt_write_() {
     return;
   }
 
-  // Wait until transmission completes to move to SENT state (simple and robust)
-  err = rmt_tx_wait_all_done(this->tx_channel_, -1);
-  if (err != ESP_OK) {
-    ESP_LOGE(TAG, "Failed waiting for TX done: %s", esp_err_to_name(err));
-    this->mode_ = OperationMode::ERROR_RMT;
-    return;
-  }
-
-  this->mode_ = OperationMode::SENT;
+  this->mode_ = OperationMode::WRITE;
 }
 
 bool IRAM_ATTR OpenTherm::rmt_read_callback(rmt_channel_handle_t, const rmt_rx_done_event_data_t *evt, void *arg) {
@@ -222,6 +224,26 @@ bool IRAM_ATTR OpenTherm::rmt_read_callback(rmt_channel_handle_t, const rmt_rx_d
   }
 
   self->mode_ = OperationMode::RECEIVED;
+
+  return false;
+}
+
+bool IRAM_ATTR OpenTherm::rmt_write_callback(rmt_channel_handle_t channel, const rmt_tx_done_event_data_t *evt,
+                                             void *arg) {
+  auto *self = static_cast<OpenTherm *>(arg);
+
+  if (evt == nullptr) {
+    ESP_LOGW(TAG, "NULL RMT tx event");
+    self->mode_ = OperationMode::ERROR_RMT;
+    return false;
+  }
+  if (evt->num_symbols == 0) {
+    ESP_LOGW(TAG, "RMT tx reported 0 symbols");
+    self->mode_ = OperationMode::ERROR_RMT;
+    return false;
+  }
+
+  self->mode_ = OperationMode::SENT;
 
   return false;
 }
@@ -328,17 +350,18 @@ bool IRAM_ATTR OpenTherm::decode_rmt_symbols_(size_t num_symbols) {
   return false;
 }
 
-void OpenTherm::set_protocol_error_(ProtocolErrorType error_type) {
+void IRAM_ATTR OpenTherm::set_protocol_error_(ProtocolErrorType error_type) {
   this->mode_ = OperationMode::ERROR_PROTOCOL;
   this->error_type_ = error_type;
 }
 
 void OpenTherm::log_protocol_state() const {
+  char data_hex[format_hex_size(sizeof(this->data_))];
   ESP_LOGD(TAG,
            "OpenTherm protocol error: %s\n"
-           "Bit index: %u\n"
-           "Data: %s",
-           protocol_error_to_str(this->error_type_), this->bit_index_, format_hex(this->data_).c_str());
+           "  Bit index: %u\n"
+           "  Data: %s",
+           protocol_error_to_str(this->error_type_), this->bit_index_, format_hex_to(data_hex, this->data_));
 
   if (this->rmt_buffer_symbol_count_ == 0) {
     ESP_LOGD(TAG, "RMT debug: no data available");
@@ -353,7 +376,7 @@ void OpenTherm::log_protocol_state() const {
   ESP_LOGD(TAG, "RX raw end =======================================");
 }
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm
 
-#endif
+#endif  // SOC_RMT_SUPPORTED
+#endif  // USE_ESP32
