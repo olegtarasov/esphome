@@ -37,44 +37,51 @@ BeforeProcessResponseTrigger = generate.opentherm_ns.class_(
 
 
 CONFIG_SCHEMA = cv.All(
-    cv.Schema(
-        {
-            cv.GenerateID(): cv.declare_id(generate.OpenthermHub),
-            cv.Required(CONF_IN_PIN): pins.internal_gpio_input_pin_schema,
-            cv.Required(CONF_OUT_PIN): pins.internal_gpio_output_pin_schema,
-            cv.Optional(CONF_CH_ENABLE, True): cv.boolean,
-            cv.Optional(CONF_DHW_ENABLE, True): cv.boolean,
-            cv.Optional(CONF_COOLING_ENABLE, False): cv.boolean,
-            cv.Optional(CONF_OTC_ACTIVE, False): cv.boolean,
-            cv.Optional(CONF_CH2_ACTIVE, False): cv.boolean,
-            cv.Optional(CONF_SUMMER_MODE_ACTIVE, False): cv.boolean,
-            cv.Optional(CONF_DHW_BLOCK, False): cv.boolean,
-            cv.Optional(CONF_SYNC_MODE, False): cv.boolean,
-            cv.Optional(CONF_BEFORE_SEND): automation.validate_automation(
-                {
-                    cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(BeforeSendTrigger),
-                }
-            ),
-            cv.Optional(CONF_BEFORE_PROCESS_RESPONSE): automation.validate_automation(
-                {
-                    cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
-                        BeforeProcessResponseTrigger
-                    ),
-                }
-            ),
-        }
-    )
-    .extend(
-        validate.create_entities_schema(
-            schema.INPUTS, (lambda _: cv.use_id(sensor.Sensor))
+    cv.Any(
+        {},
+        cv.Schema(
+            {
+                cv.GenerateID(): cv.declare_id(generate.OpenthermHub),
+                cv.Required(CONF_IN_PIN): pins.internal_gpio_input_pin_schema,
+                cv.Required(CONF_OUT_PIN): pins.internal_gpio_output_pin_schema,
+                cv.Optional(CONF_CH_ENABLE, True): cv.boolean,
+                cv.Optional(CONF_DHW_ENABLE, True): cv.boolean,
+                cv.Optional(CONF_COOLING_ENABLE, False): cv.boolean,
+                cv.Optional(CONF_OTC_ACTIVE, False): cv.boolean,
+                cv.Optional(CONF_CH2_ACTIVE, False): cv.boolean,
+                cv.Optional(CONF_SUMMER_MODE_ACTIVE, False): cv.boolean,
+                cv.Optional(CONF_DHW_BLOCK, False): cv.boolean,
+                cv.Optional(CONF_SYNC_MODE, False): cv.boolean,
+                cv.Optional(CONF_BEFORE_SEND): automation.validate_automation(
+                    {
+                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
+                            BeforeSendTrigger
+                        ),
+                    }
+                ),
+                cv.Optional(
+                    CONF_BEFORE_PROCESS_RESPONSE
+                ): automation.validate_automation(
+                    {
+                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
+                            BeforeProcessResponseTrigger
+                        ),
+                    }
+                ),
+            }
         )
-    )
-    .extend(
-        validate.create_entities_schema(
-            schema.SETTINGS, (lambda s: s.validation_schema)
+        .extend(
+            validate.create_entities_schema(
+                schema.INPUTS, (lambda _: cv.use_id(sensor.Sensor))
+            )
         )
-    )
-    .extend(cv.COMPONENT_SCHEMA),
+        .extend(
+            validate.create_entities_schema(
+                schema.SETTINGS, (lambda s: s.validation_schema)
+            )
+        )
+        .extend(cv.COMPONENT_SCHEMA),
+    ),
     cv.only_on([PLATFORM_ESP32, PLATFORM_ESP8266]),
 )
 
@@ -87,6 +94,11 @@ async def to_code(config: dict[str, Any]) -> None:
             esp32.include_builtin_idf_component("esp_driver_gptimer")
         else:
             esp32.include_builtin_idf_component("esp_driver_rmt")
+
+    # The transport is also auto-loaded as a library by opentherm_boiler,
+    # which does not create a controller hub.
+    if not config:
+        return
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)

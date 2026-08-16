@@ -1,0 +1,47 @@
+opentherm_boiler:
+  id: boiler
+  in_pin: GPIO4
+  out_pin: GPIO5
+  t_boiler:
+    sensor: source_temperature
+  t_dhw:
+    value: 45.0
+  t_outside:
+    lambda: return 12.5f;
+  fault_indication:
+    binary_sensor: source_fault
+  on_receive:
+    - lambda: ESP_LOGD("opentherm_boiler", "Received message %u", data.id);
+  before_transmit:
+    - lambda: ESP_LOGD("opentherm_boiler", "Transmitting message %u", data.id);
+
+sensor:
+  - platform: template
+    id: source_temperature
+    lambda: return 55.0f;
+    update_interval: 60s
+  - platform: opentherm_boiler
+    opentherm_boiler_id: boiler
+    t_room:
+      name: Room setpoint
+
+binary_sensor:
+  - platform: template
+    id: source_fault
+    lambda: return false;
+  - platform: opentherm_boiler
+    opentherm_boiler_id: boiler
+    ch_enable:
+      name: Central heating requested
+
+number:
+  - platform: opentherm_boiler
+    opentherm_boiler_id: boiler
+    t_dhw_set:
+      name: Domestic hot water setpoint
+
+switch:
+  - platform: opentherm_boiler
+    opentherm_boiler_id: boiler
+    flame_on:
+      name: Flame state

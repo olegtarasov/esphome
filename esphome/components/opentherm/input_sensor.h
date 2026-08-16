@@ -1,5 +1,6 @@
 #pragma once
 
+#include "esphome/components/sensor/sensor.h"
 #include "hub.h"
 
 namespace esphome {

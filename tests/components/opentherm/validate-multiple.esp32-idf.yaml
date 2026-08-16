@@ -1,0 +1,17 @@
+opentherm:
+  - id: primary_opentherm
+    in_pin: GPIO4
+    out_pin: GPIO5
+  - id: secondary_opentherm
+    in_pin: GPIO18
+    out_pin: GPIO19
+
+sensor:
+  - platform: opentherm
+    opentherm_id: primary_opentherm
+    t_boiler:
+      name: Primary boiler temperature
+  - platform: opentherm
+    opentherm_id: secondary_opentherm
+    t_boiler:
+      name: Secondary boiler temperature

@@ -120,7 +120,7 @@ CONFIG_SCHEMA = cv.All(
                     ),
                     cv.has_exactly_one_key(CONF_BINARY_SENSOR, CONF_VALUE, CONF_LAMBDA),
                 )
-                for key, schema in schema.BINARY_SENSORS.items()
+                for key in schema.BINARY_SENSORS
             }
         )
     )

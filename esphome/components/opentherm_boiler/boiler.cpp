@@ -102,7 +102,7 @@ void Boiler::read_request_() {
   if (!this->opentherm_->get_message(data)) {
     ESP_LOGW(TAG, "Couldn't get the request, but flags indicated success. This is a bug.");
     this->opentherm_->stop();
-    this->status_set_error("BUG");
+    this->status_set_error(LOG_STR("BUG"));
     return;
   }
 

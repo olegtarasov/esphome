@@ -76,9 +76,9 @@ template<typename T, T (OpenthermData::*Getter)() const, void (OpenthermData::*S
   static inline void set(OpenthermData &data, T value) { (data.*Setter)(value); }
 };
 
-using u16 = MethodAccessor<uint16_t, &OpenthermData::u16, &OpenthermData::u16>;
-using s16 = MethodAccessor<int16_t, &OpenthermData::s16, &OpenthermData::s16>;
-using f88 = MethodAccessor<float, &OpenthermData::f88, &OpenthermData::f88>;
+using u16 = MethodAccessor<uint16_t, &OpenthermData::get_u16, &OpenthermData::set_u16>;
+using s16 = MethodAccessor<int16_t, &OpenthermData::get_s16, &OpenthermData::set_s16>;
+using f88 = MethodAccessor<float, &OpenthermData::get_f88, &OpenthermData::set_f88>;
 
 }  // namespace message_data
 }  // namespace opentherm
