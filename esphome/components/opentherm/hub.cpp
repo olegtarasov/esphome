@@ -39,17 +39,17 @@ OpenthermData OpenthermHub::build_request_(MessageId request_id) const {
     data.type = MessageType::READ_DATA;
 
     // Clear CH_ENABLE if CH_SETPOINT is not set
-    if (!prepare_data_out_(MessageId::CH_SETPOINT, temp) || !(temp.f88() > 0.0)) {
+    if (!prepare_data_out_(MessageId::CH_SETPOINT, temp) || !(temp.get_f88() > 0.0)) {
       clear_bit(data.valueHB, STATUS_HB_CH_ENABLE);
     }
 
     // Clear COOLING_ENABLE if COOLING_CONTROL is not set
-    if (!prepare_data_out_(MessageId::COOLING_CONTROL, temp) || !(temp.f88() > 0.0)) {
+    if (!prepare_data_out_(MessageId::COOLING_CONTROL, temp) || !(temp.get_f88() > 0.0)) {
       clear_bit(data.valueHB, STATUS_HB_COOLING_ENABLE);
     }
 
     // Clear CH2_ENABLE if CH2_SETPOINT is not set
-    if (!prepare_data_out_(MessageId::CH2_SETPOINT, temp) || !(temp.f88() > 0.0)) {
+    if (!prepare_data_out_(MessageId::CH2_SETPOINT, temp) || !(temp.get_f88() > 0.0)) {
       clear_bit(data.valueHB, STATUS_HB_CH2_ENABLE);
     }
 
