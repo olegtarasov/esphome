@@ -50,8 +50,9 @@ void OpenTherm::listen() {
 void OpenTherm::send(OpenthermData &data) {
   this->stop_timer_();
   OpenThermBase::send(data);
-  this->clock_ = 1;     // clock starts at HIGH
-  this->bit_pos_ = 33;  // count down (33 == start bit, 32-1 data, 0 == stop bit)
+  this->clock_ = 1;  // clock starts at HIGH
+  // Count down: start bit, 32 data bits, stop bit.
+  this->bit_pos_ = STOP_BIT_POSITION;
   this->start_write_timer_();
 }
 
@@ -87,7 +88,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
         return false;
       } else if (arg->clock_ == 1 || arg->capture_ > 0xF) {
         // transition in the middle of the bit OR no transition between two bit, both are valid data points
-        if (arg->bit_pos_ == BitPositions::STOP_BIT) {
+        if (arg->bit_pos_ == STOP_BIT_POSITION) {
           // expecting stop bit
           auto stop_bit_error = arg->verify_stop_bit_(last);
           if (stop_bit_error == ProtocolErrorType::NO_ERROR) {
@@ -121,7 +122,7 @@ bool IRAM_ATTR OpenTherm::timer_isr(OpenTherm *arg) {
     arg->capture_ = (arg->capture_ << 1) | value;
   } else if (arg->mode_ == OperationMode::WRITE) {
     // write data to pin
-    if (arg->bit_pos_ == 33 || arg->bit_pos_ == 0) {  // start bit
+    if (arg->bit_pos_ == STOP_BIT_POSITION || arg->bit_pos_ == 0) {  // start or stop bit
       arg->write_bit_(1, arg->clock_);
     } else {  // data bits
       arg->write_bit_(read_bit(arg->data_, arg->bit_pos_ - 1), arg->clock_);

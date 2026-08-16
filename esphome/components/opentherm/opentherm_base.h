@@ -286,7 +286,7 @@ class OpenThermBase {
   InternalGPIOPin *out_pin_{};
 
   OperationMode mode_{OperationMode::IDLE};
-  ProtocolErrorType error_type_;
+  ProtocolErrorType error_type_{ProtocolErrorType::NO_ERROR};
   uint32_t data_{};
 };
 

@@ -10,9 +10,7 @@
 namespace esphome {
 namespace opentherm {
 
-enum BitPositions { STOP_BIT = 33 };
-
-/// RMT implementation of OpenTherm protocol for ESP32.
+/// Timer-based implementation of the OpenTherm protocol for ESP8266.
 class OpenTherm : public OpenThermBase {
  public:
   OpenTherm(InternalGPIOPin *in_pin, InternalGPIOPin *out_pin);
@@ -36,11 +34,11 @@ class OpenTherm : public OpenThermBase {
 
   uint32_t capture_{};
   uint8_t clock_{};
-  uint32_t data_{};
   uint8_t bit_pos_{};
   int32_t timeout_counter_ = -1;  // <0 no timeout
 
   static constexpr int32_t DEVICE_TIMEOUT = 800;
+  static constexpr uint8_t STOP_BIT_POSITION = 33;
 
   void stop_timer_();
 

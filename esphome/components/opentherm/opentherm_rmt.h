@@ -41,6 +41,8 @@ class OpenTherm : public OpenThermBase {
   rmt_receive_config_t rx_config_{};
   rmt_encoder_handle_t tx_encoder_{};
 
+  // One OpenTherm frame contains 34 Manchester symbols (start + 32 data + stop).
+  // Keep a little slack for diagnostic captures.
   static constexpr size_t RMT_SYMBOL_CAPACITY = 40;
   rmt_symbol_word_t rmt_buffer_[RMT_SYMBOL_CAPACITY]{};
   size_t rmt_buffer_symbol_count_{};
