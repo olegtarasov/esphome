@@ -9,15 +9,11 @@
 
 #include "opentherm_rmt.h"
 #include "esphome/core/helpers.h"
+#include <cinttypes>
 #include <driver/gpio.h>
 #include <esp_err.h>
-#include <string>
 
-namespace esphome {
-namespace opentherm {
-
-using std::string;
-using std::to_string;
+namespace esphome::opentherm {
 
 static const char *const TAG = "opentherm";
 
@@ -351,9 +347,9 @@ void OpenTherm::set_protocol_error_(ProtocolErrorType error_type) {
 void OpenTherm::debug_protocol_state() const {
   ESP_LOGD(TAG,
            "OpenTherm protocol error: %s\n"
-           "Bit index: %u\n"
-           "Data: %s",
-           protocol_error_to_str(this->error_type_), this->bit_idx_, format_hex(this->data_).c_str());
+           "  Bit index: %u\n"
+           "  Data: 0x%08" PRIx32,
+           protocol_error_to_str(this->error_type_), this->bit_idx_, this->data_);
   if (this->rmt_buffer_symbol_count_ == 0) {
     ESP_LOGD(TAG, "RMT debug: no data available");
     return;
@@ -367,7 +363,6 @@ void OpenTherm::debug_protocol_state() const {
   ESP_LOGD(TAG, "RX raw end =======================================");
 }
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm
 
 #endif  // defined(ESP32) || defined(USE_ESP_IDF)

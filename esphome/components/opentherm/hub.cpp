@@ -3,8 +3,7 @@
 
 #include <string>
 
-namespace esphome {
-namespace opentherm {
+namespace esphome::opentherm {
 
 static const char *const TAG = "opentherm";
 namespace message_data {
@@ -28,11 +27,11 @@ uint8_t parse_u8_lb(OpenthermData &data) { return data.valueLB; }
 uint8_t parse_u8_hb(OpenthermData &data) { return data.valueHB; }
 int8_t parse_s8_lb(OpenthermData &data) { return (int8_t) data.valueLB; }
 int8_t parse_s8_hb(OpenthermData &data) { return (int8_t) data.valueHB; }
-uint16_t parse_u16(OpenthermData &data) { return data.u16(); }
+uint16_t parse_u16(OpenthermData &data) { return data.get_u16(); }
 uint16_t parse_u8_lb_60(OpenthermData &data) { return data.valueLB * 60; }
 uint16_t parse_u8_hb_60(OpenthermData &data) { return data.valueHB * 60; }
-int16_t parse_s16(OpenthermData &data) { return data.s16(); }
-float parse_f88(OpenthermData &data) { return data.f88(); }
+int16_t parse_s16(OpenthermData &data) { return data.get_s16(); }
+float parse_f88(OpenthermData &data) { return data.get_f88(); }
 
 void write_flag8_lb_0(const bool value, OpenthermData &data) { data.valueLB = write_bit(data.valueLB, 0, value); }
 void write_flag8_lb_1(const bool value, OpenthermData &data) { data.valueLB = write_bit(data.valueLB, 1, value); }
@@ -54,9 +53,9 @@ void write_u8_lb(const uint8_t value, OpenthermData &data) { data.valueLB = valu
 void write_u8_hb(const uint8_t value, OpenthermData &data) { data.valueHB = value; }
 void write_s8_lb(const int8_t value, OpenthermData &data) { data.valueLB = (uint8_t) value; }
 void write_s8_hb(const int8_t value, OpenthermData &data) { data.valueHB = (uint8_t) value; }
-void write_u16(const uint16_t value, OpenthermData &data) { data.u16(value); }
-void write_s16(const int16_t value, OpenthermData &data) { data.s16(value); }
-void write_f88(const float value, OpenthermData &data) { data.f88(value); }
+void write_u16(const uint16_t value, OpenthermData &data) { data.set_u16(value); }
+void write_s16(const int16_t value, OpenthermData &data) { data.set_s16(value); }
+void write_f88(const float value, OpenthermData &data) { data.set_f88(value); }
 
 }  // namespace message_data
 
@@ -259,8 +258,8 @@ void OpenthermHub::sync_loop_() {
 
   this->start_conversation_();
 
-  // This is not neccessary now, since RMT transmission waits for completion in `opentherm.cpp`.
-  // But in the future we will make it async again so we don't remove this block.
+  // This is not necessary while the RMT backend waits for transmission to complete, but keep the guard for a future
+  // asynchronous implementation.
   // Spin while message is being sent to device
   if (!this->spin_wait_(1150, [&] { return this->opentherm_->is_active(); })) {
     ESP_LOGE(TAG, "Hub timeout triggered during send");
@@ -384,10 +383,8 @@ void OpenthermHub::dump_config() {
   this->write_initial_messages_(initial_messages);
   this->write_repeating_messages_(repeating_messages);
 
-  ESP_LOGCONFIG(TAG, "OpenTherm:");
-  LOG_PIN("  In: ", this->in_pin_);
-  LOG_PIN("  Out: ", this->out_pin_);
   ESP_LOGCONFIG(TAG,
+                "OpenTherm:\n"
                 "  Sync mode: %s\n"
                 "  Sensors: %s\n"
                 "  Binary sensors: %s\n"
@@ -398,6 +395,8 @@ void OpenthermHub::dump_config() {
                 YESNO(this->sync_mode_), SHOW(OPENTHERM_SENSOR_LIST(ID, )), SHOW(OPENTHERM_BINARY_SENSOR_LIST(ID, )),
                 SHOW(OPENTHERM_SWITCH_LIST(ID, )), SHOW(OPENTHERM_INPUT_SENSOR_LIST(ID, )),
                 SHOW(OPENTHERM_OUTPUT_LIST(ID, )), SHOW(OPENTHERM_NUMBER_LIST(ID, )));
+  LOG_PIN("  In: ", this->in_pin_);
+  LOG_PIN("  Out: ", this->out_pin_);
   ESP_LOGCONFIG(TAG, "  Initial requests:");
   for (auto type : initial_messages) {
     ESP_LOGCONFIG(TAG, "  - %d (%s)", type, message_id_to_str(type));
@@ -408,5 +407,4 @@ void OpenthermHub::dump_config() {
   }
 }
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm

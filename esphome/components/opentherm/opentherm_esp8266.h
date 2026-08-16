@@ -7,11 +7,10 @@
 #include "esphome/core/log.h"
 #include "opentherm_base.h"
 
-namespace esphome {
-namespace opentherm {
+namespace esphome::opentherm {
 
 /// Timer-based implementation of the OpenTherm protocol for ESP8266.
-class OpenTherm : public OpenThermBase {
+class OpenTherm final : public OpenThermBase {
  public:
   OpenTherm(InternalGPIOPin *in_pin, InternalGPIOPin *out_pin);
 
@@ -53,6 +52,5 @@ class OpenTherm : public OpenThermBase {
   static OpenTherm *instance;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 };
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm
 #endif  // ESP8266

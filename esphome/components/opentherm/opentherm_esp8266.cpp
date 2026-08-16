@@ -10,13 +10,9 @@
 #include "opentherm_esp8266.h"
 #include "esphome/core/helpers.h"
 #include "Arduino.h"
-#include <string>
+#include <cinttypes>
 
-namespace esphome {
-namespace opentherm {
-
-using std::string;
-using std::to_string;
+namespace esphome::opentherm {
 
 static const char *const TAG = "opentherm";
 
@@ -198,10 +194,9 @@ void IRAM_ATTR OpenTherm::write_bit_(uint8_t high, uint8_t clock) {
 }
 
 void OpenTherm::debug_protocol_state() const {
-  ESP_LOGD(TAG, "data: %s; clock: %s; capture: %s; bit_pos: %s", format_hex(this->data_).c_str(),
-           to_string(clock_).c_str(), format_bin(this->capture_).c_str(), to_string(this->bit_pos_).c_str());
+  ESP_LOGD(TAG, "data: 0x%08" PRIx32 "; clock: %u; capture: 0x%08" PRIx32 "; bit_pos: %u", this->data_, this->clock_,
+           this->capture_, this->bit_pos_);
 }
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm
 #endif  // ESP8266

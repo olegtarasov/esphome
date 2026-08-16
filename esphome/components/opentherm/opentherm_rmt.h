@@ -16,11 +16,10 @@
 #include <driver/rmt_rx.h>
 #include <driver/rmt_tx.h>
 
-namespace esphome {
-namespace opentherm {
+namespace esphome::opentherm {
 
 /// RMT implementation of OpenTherm protocol for ESP32.
-class OpenTherm : public OpenThermBase {
+class OpenTherm final : public OpenThermBase {
  public:
   OpenTherm(InternalGPIOPin *in_pin, InternalGPIOPin *out_pin);
 
@@ -62,6 +61,5 @@ class OpenTherm : public OpenThermBase {
   void set_protocol_error_(ProtocolErrorType error_type);
 };
 
-}  // namespace opentherm
-}  // namespace esphome
+}  // namespace esphome::opentherm
 #endif  // defined(ESP32) || defined(USE_ESP_IDF)
